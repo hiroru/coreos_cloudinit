@@ -8,7 +8,7 @@
 # Defining variables
 coreos_cluster_nodes="3"
 envfile="/etc/environment"
-ETCD_DISCOVERY=""
+ETCD_DISCOVERY="https://discovery.etcd.io/99bf454eebc4140fa06794cf7bd23659"
 trap "rm --force --recursive ${workdir}" SIGINT SIGTERM EXIT
 
 # Function list
@@ -77,8 +77,8 @@ coreos:
 ssh_authorized_keys:
   - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCh5/Evt1CGZ1gi9AFYC5VrWx5/ppnXRflOiVoKizYCuLs7WPaRSLurOaOsXh/UoqyaEsjTw5UXuQhoLueF2krCIWeIfD1QAPOXgnbAkp1GWfS6sxlvxhHh2mi1mMrVYEt+Jg/MFW8aU8hV2iW3oAEr9UqtSLoSlQTdKjkMaRtCN4JnEp8t2xvL/xUYM+1SepdJhebSsTKLL+ogfP8j3sYvpDMmGkXdHXXFNeQ37oBZMjbEg71aP0NmCXIbzTIaiIhG6WlerlNkcDUDe4GsJFtKMXkJQaGvqIb8pXXVIpc8s7YamVzd/2ZtnctFrr4x00rFSehqvplSeGG2+FVww6mL
 EOF
-sudo sed -i 's/--oem=ec2-compat/--from-file=\/usr\/share\/oem\/custom-cloud-config.yml/g' /usr/share/oem/cloud-config.yml
+sudo sed -i 's/--oem=ec2-compat/--from-file=\/usr\/share\/oem\/cdmon-cloud-config.yml/g' /usr/share/oem/cloud-config.yml
 
 # Exec custom file, reboot and enjoy :)
-sudo coreos-cloudinit --from-file='/usr/share/oem/custom-cloud-config.yml'
+sudo coreos-cloudinit --from-file='/usr/share/oem/cdmon-cloud-config.yml'
 sudo reboot
