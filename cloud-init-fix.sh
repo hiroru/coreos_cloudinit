@@ -6,9 +6,9 @@
 #
 
 # Defining variables
-coreos_cluster_nodes="3"
 envfile="/etc/environment"
-ETCD_DISCOVERY="https://discovery.etcd.io/99bf454eebc4140fa06794cf7bd23659"
+ETCD_DISCOVERY="" # Must be unsetted when adding a new node
+ETCD_NAME="" # Set whith the machine name when adding a new node
 trap "rm --force --recursive ${workdir}" SIGINT SIGTERM EXIT
 
 # Function list
@@ -22,32 +22,20 @@ function get_ipv4() {
     echo "${ip}"
 }
 
-function get_token(){
-   numnodes="${1}"
-   local token
-   while [ -z "${token}" ]; do
-      token="$(curl https://discovery.etcd.io/new?size=$numnodes)"
-      sleep .1
-   done
-   echo "${token}"
-}
-
 # Creating environment file
-if [[ -z $ETCD_DISCOVERY ]]; then
-   $ETCD_DISCOVERY="$(get_token $coreos_cluster_nodes)"
-fi
-
 until ! [[ -z $COREOS_PRIVATE_IPV4 ]]; do
    sudo touch "$envfile"
    if [ $? -ne 0 ]; then
       echo "Error: could not write file $envfile."
    fi
    export COREOS_PUBLIC_IPV4="$(get_ipv4 eth0)"
-   export COREOS_PRIVATE_IPV4="$(get_ipv4 eth1)"
-   export ETCD_DISCOVERY="$ETCD_DISCOVERY"
    sudo echo "COREOS_PUBLIC_IPV4=$COREOS_PUBLIC_IPV4" > "$envfile"
+   export COREOS_PRIVATE_IPV4="$(get_ipv4 eth1)"
    sudo echo "COREOS_PRIVATE_IPV4=$COREOS_PRIVATE_IPV4" >> "$envfile"
-   sudo echo "ETCD_DISCOVERY=$ETCD_DISCOVERY" >> "$envfile"
+   if [ -z $ETCD_DISCOVERY ]; then
+      export ETCD_DISCOVERY="$ETCD_DISCOVERY"
+      sudo echo "ETCD_DISCOVERY=$ETCD_DISCOVERY" >> "$envfile"
+   fi
    source "/etc/environment"
 done
 
@@ -55,9 +43,31 @@ done
 if [ -z "$(mount | awk '/oem/ && /rw/ {print}')" ]; then
    sudo mount -o remount,rw /usr/share/oem/
 fi
+
+if [ -z $ETCD_DISCOVERY ]; then
 cat > "/usr/share/oem/cdmon-cloud-config.yml" <<EOF
 #cloud-config
-
+coreos:
+  etcd2:
+    advertise-client-urls: http://$COREOS_PRIVATE_IPV4:2379,http://$COREOS_PRIVATE_IPV4:4001
+    initial-advertise-peer-urls: http://$COREOS_PRIVATE_IPV4:2380
+    listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
+    listen-peer-urls: http://$COREOS_PRIVATE_IPV4:2380
+  fleet:
+    public-ip: $COREOS_PUBLIC_IPV4
+  update:
+    reboot-strategy: "etcd-lock"
+  units:
+    - name: etcd2.service
+      command: stop
+    - name: fleet.service
+      command: stop
+ssh_authorized_keys:
+  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCh5/Evt1CGZ1gi9AFYC5VrWx5/ppnXRflOiVoKizYCuLs7WPaRSLurOaOsXh/UoqyaEsjTw5UXuQhoLueF2krCIWeIfD1QAPOXgnbAkp1GWfS6sxlvxhHh2mi1mMrVYEt+Jg/MFW8aU8hV2iW3oAEr9UqtSLoSlQTdKjkMaRtCN4JnEp8t2xvL/xUYM+1SepdJhebSsTKLL+ogfP8j3sYvpDMmGkXdHXXFNeQ37oBZMjbEg71aP0NmCXIbzTIaiIhG6WlerlNkcDUDe4GsJFtKMXkJQaGvqIb8pXXVIpc8s7YamVzd/2ZtnctFrr4x00rFSehqvplSeGG2+FVww6mL
+EOF
+else
+cat > "/usr/share/oem/cdmon-cloud-config.yml" <<EOF
+#cloud-config
 coreos:
   etcd2:
     discovery: $ETCD_DISCOVERY
@@ -77,6 +87,8 @@ coreos:
 ssh_authorized_keys:
   - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCh5/Evt1CGZ1gi9AFYC5VrWx5/ppnXRflOiVoKizYCuLs7WPaRSLurOaOsXh/UoqyaEsjTw5UXuQhoLueF2krCIWeIfD1QAPOXgnbAkp1GWfS6sxlvxhHh2mi1mMrVYEt+Jg/MFW8aU8hV2iW3oAEr9UqtSLoSlQTdKjkMaRtCN4JnEp8t2xvL/xUYM+1SepdJhebSsTKLL+ogfP8j3sYvpDMmGkXdHXXFNeQ37oBZMjbEg71aP0NmCXIbzTIaiIhG6WlerlNkcDUDe4GsJFtKMXkJQaGvqIb8pXXVIpc8s7YamVzd/2ZtnctFrr4x00rFSehqvplSeGG2+FVww6mL
 EOF
+fi
+
 sudo sed -i 's/--oem=ec2-compat/--from-file=\/usr\/share\/oem\/cdmon-cloud-config.yml/g' /usr/share/oem/cloud-config.yml
 
 # Exec custom file, reboot and enjoy :)
