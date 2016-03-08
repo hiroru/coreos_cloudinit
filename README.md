@@ -42,20 +42,16 @@ To properly deploy a CoreOS Cluster in the Adam's Openstack just follow the next
 
 ### Growing and shrink the cluster size
 #### Removing node from cluster
-1. First we need to list the current cluster nodes in a member of the cluster:
-...`etcdctl member list`
-2. Use the first field as _MEMBER_ID_
-...`etcdctl member remove _MEMBER_ID_`
+1. First we need to list the current cluster nodes in a member of the cluster: `etcdctl member list`
+2. Use the first field as _MEMBER_ID_: `etcdctl member remove _MEMBER_ID_`
 3. Then we must wait until etcd2 in the removed node returns "the member has been permanently removed from the cluster" message.
 
 #### Adding node to cluster
 Keep in mind that to add a new member to a cluster is a manual process, it's recommended to add it one by one. The procedure is described below:
 
-1. Run the next command into any node from the current cluster:
-...`etcdctl member list | awk '{print $2"="$3}' | awk -F"=" '{print $2"="$4}' | awk '/START/{if (x)print x;x="";next}{x=(!x)?$0:x","$0;}END{print x;}'``
+1. Run the next command into any node from the current cluster: ```etcdctl member list | awk '{print $2"="$3}' | awk -F"=" '{print $2"="$4}' | awk '/START/{if (x)print x;x="";next}{x=(!x)?$0:x","$0;}END{print x;}'````
 
-...And you will get an output like:
-...`4ad401e4b56d403689f3d556c9c7bf37=http://172.31.64.149:2380,e0d9e5adb6eb4c8f94dda86770f38f88=http://172.31.64.151:2380,fc69854b6bd9428f8181c7a76797a313=http://172.31.64.152:2380,c233467ef98d457dbb9ca104914b6a92=http://172.31.64.150:2380`
+...And you will get an output like: ```4ad401e4b56d403689f3d556c9c7bf37=http://172.31.64.149:2380,e0d9e5adb6eb4c8f94dda86770f38f88=http://172.31.64.151:2380,fc69854b6bd9428f8181c7a76797a313=http://172.31.64.152:2380,c233467ef98d457dbb9ca104914b6a92=http://172.31.64.150:2380```
 
 ...Simply copy and paste into initial_cluster variable from cloud-init-fix.sh file.
 
