@@ -54,12 +54,12 @@ Keep in mind that to add a new member to a cluster is a manual process, it's rec
 etcdctl member list | awk '{print $2"="$3}' | awk -F"=" '{print $2"="$4}' | awk '/START/{if (x)print x;x="";next}{x=(!x)?$0:x","$0;}END{print x;}'`
 ```
 
-···And you will get an output like:
+···And you will get an output like:··
 ```
 4ad401e4b56d403689f3d556c9c7bf37=http://172.31.64.149:2380,e0d9e5adb6eb4c8f94dda86770f38f88=http://172.31.64.151:2380,fc69854b6bd9428f8181c7a76797a313=http://172.31.64.152:2380,c233467ef98d457dbb9ca104914b6a92=http://172.31.64.150:2380
 ```
 
-···Simply copy and paste into initial_cluster variable from cloud-init-fix.sh file.
+···Simply copy and paste into initial_cluster variable from cloud-init-fix.sh file.··
 
 2. Edit cloud-init-fix.sh file and set initial_cluster variable value with the output you got above and then set new_cluster to false.
 
@@ -69,7 +69,7 @@ etcdctl member list | awk '{print $2"="$3}' | awk -F"=" '{print $2"="$4}' | awk 
 3. Then run the next commands into any node from the current cluster (not the new one):
 `etcdctl member add _NEW_NODE_ID_ http://_NEW_NODE_PRIVATE_IP_:2380`
 
-···Skip the text returned from that command.
+···Skip the text returned from that command.··
 
 4. Back to the ssh shell in the new node and you can now start etcd2 and the fleet by:
 ```
