@@ -1,17 +1,16 @@
 #!/bin/bash
 # Dirty fix for CoreOS cloud-init on Openstack with multiple interfaces.
-# by Sergi Barroso <hiroru@lionclan.org>
+# by Sergi Barroso <sergibarroso@cdmon.com>
 #
 # Official CoreOS docs: https://coreos.com/os/docs/latest/cloud-config.html
 #
 
 # Defining variables
-new_cluster=false
+new_cluster=true
 # etcd_discovery must be set to create initial new cluster
 etcd_discovery=""
 # initial_cluster will be use only to add a new node, then run below command into current cluster member
-# etcdctl member list | awk '{print $2"="$3}' | awk -F"=" '{print $2"="$4}' | awk '/START/{if (x)print x;x="";next}{x=(!x)?$0:x","$0;}END{print x;}'
-initial_cluster="4ad401e4b56d403689f3d556c9c7bf37=http://172.31.64.149:2380,e0d9e5adb6eb4c8f94dda86770f38f88=http://172.31.64.151:2380,c233467ef98d457dbb9ca104914b6a92=http://172.31.64.150:2380"
+initial_cluster=""
 
 envfile="/etc/environment"
 new_node_name="$(cat /etc/machine-id)"
