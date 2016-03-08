@@ -44,8 +44,10 @@ To properly deploy a CoreOS Cluster in the Adam's Openstack just follow the next
 #### Removing node from cluster
 1. First we need to list the current cluster nodes in a member of the cluster:
     `etcdctl member list`
+
 2. Use the first field as _MEMBER_ID_:
     `etcdctl member remove _MEMBER_ID_`
+
 3. Then we must wait until etcd2 in the removed node returns "the member has been permanently removed from the cluster" message.
 
 #### Adding node to cluster
@@ -70,6 +72,7 @@ Keep in mind that to add a new member to a cluster is a manual process, it's rec
 
 3. Then run the next commands into any node from the current cluster (not the new one):
     `etcdctl member add _NEW_NODE_ID_ http://_NEW_NODE_PRIVATE_IP_:2380`
+
     Skip the text returned from that command.
 
 4. Back to the ssh shell in the new node and you can now start etcd2 and the fleet by:
