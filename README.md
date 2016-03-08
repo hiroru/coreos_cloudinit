@@ -51,7 +51,7 @@ Keep in mind that to add a new member to a cluster is a manual process, it's rec
 
 1. Run the next command into any node from the current cluster:
 ```
-etcdctl member list | awk '{print $2"="$3}' | awk -F"=" '{print $2"="$4}' | awk '/START/{if (x)print x;x="";next}{x=(!x)?$0:x","$0;}END{print x;}'`
+    etcdctl member list | awk '{print $2"="$3}' | awk -F"=" '{print $2"="$4}' | awk '/START/{if (x)print x;x="";next}{x=(!x)?$0:x","$0;}END{print x;}'`
 ```
 
 ...And you will get an output like: ```
