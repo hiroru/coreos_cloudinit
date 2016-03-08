@@ -9,15 +9,16 @@ To properly deploy a CoreOS Cluster in the Adam's Openstack just follow the next
 ### Deploy a new cluster
 Before deploying a new cluster we must decide the size which it will has. Depending on the number of nodes we can reach an optimal fault tolerance platform:
 
-|Cluster size|Majority|Failure Tolerance|
-|1|1|0|
-|3|2|1|
-|4|3|1|
-|5|3|2|
-|6|4|2|
-|7|4|3|
-|8|5|3|
-|9|5|4|
+| Cluster size | Majority | Failure Tolerance |
+|--------------|----------|-------------------|
+| 1            | 1        | 0                 |
+| 3            | 2        | 1                 |
+| 4            | 3        | 1                 |
+| 5            | 3        | 2                 |
+| 6            | 4        | 2                 |
+| 7            | 4        | 3                 |
+| 8            | 5        | 3                 |
+| 9            | 5        | 4                 |
 
 Just we can see in the table above It is recommended to have an odd number of members in a cluster, 3-5-7-9 and so on.
 
