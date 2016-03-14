@@ -8,7 +8,7 @@
 # Defining variables
 new_cluster=true
 # etcd_discovery must be set to create initial new cluster
-etcd_discovery=""
+etcd_discovery="https://discovery.etcd.io/acf2b4abb3bf59f5f2e6df451daf7c47"
 # initial_cluster will be use only to add a new node, then run below command into current cluster member
 initial_cluster=""
 
@@ -55,14 +55,14 @@ cat > "/usr/share/oem/cdmon-cloud-config.yml" <<EOF
 coreos:
   etcd2:
     discovery: $etcd_discovery
-    advertise-client-urls: http://$COREOS_PRIVATE_IPV4:2379,http://$COREOS_PRIVATE_IPV4:4001
+    advertise-client-urls: http://$COREOS_PRIVATE_IPV4:4001,http://$COREOS_PUBLIC_IPV4:2379
     initial-advertise-peer-urls: http://$COREOS_PRIVATE_IPV4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
     listen-peer-urls: http://$COREOS_PRIVATE_IPV4:2380
   fleet:
     public-ip: $COREOS_PUBLIC_IPV4
   update:
-    reboot-strategy: "etcd-lock"
+    reboot-strategy: "best-effort"
   units:
     - name: etcd2.service
       command: start
@@ -77,7 +77,7 @@ cat > "/usr/share/oem/cdmon-cloud-config.yml" <<EOF
 #cloud-config
 coreos:
   etcd2:
-    advertise-client-urls: http://$COREOS_PRIVATE_IPV4:2379,http://$COREOS_PRIVATE_IPV4:4001
+    advertise-client-urls: http://$COREOS_PRIVATE_IPV4:4001,http://$COREOS_PUBLIC_IPV4:2379
     initial-advertise-peer-urls: http://$COREOS_PRIVATE_IPV4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
     listen-peer-urls: http://$COREOS_PRIVATE_IPV4:2380
@@ -87,7 +87,7 @@ coreos:
   fleet:
     public-ip: $COREOS_PUBLIC_IPV4
   update:
-    reboot-strategy: "etcd-lock"
+    reboot-strategy: "best-effort"
   units:
     - name: etcd2.service
       command: stop
