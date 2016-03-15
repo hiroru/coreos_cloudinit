@@ -1,7 +1,7 @@
 # CoreOS cluster cloud-init fix
 
 ## Description
-This script was created to fill the gap by the lack of meta-data service on the Adam's Public Cloud.
+These scripts were created to fill the gap by the lack of meta-data service on the Adam's Public Cloud.
 
 ## How to use it
 To properly deploy a CoreOS Cluster in the Adam's Openstack just follow the next few steps:
@@ -31,14 +31,13 @@ To properly deploy a CoreOS Cluster in the Adam's Openstack just follow the next
 
 1. Start Launch Instances menu
 2. Choose your custom detail information but pay attention to Flavor which should be m1.medium at worst and to Instance Count which will be used later.
-3. In Access & security tap you must check default and coreos Security Groups.
-4. Add tenant-cdmonexternal-net and tenant-cdmoninternal-net into the Selected networks
-5. It's the turn for the script to enter the scene:
-6. Edit ETCD_DISCOVERY inside the script with the text returned by https://discovery.etcd.io/new?size=$numnodes
-7. Check if new_cluster variable is set to true
-8. Inside Post-Creation tab select File into drop-down menu to select this script. and check that
-9. Finally in the Advanced Options check the Configuration Drive option.
-10. Ignition!
+3. Choose Boot from image and select between coreos_alpha and coreos_stable.
+4. In Access & security tap you must check default and coreos Security Groups. Select your personal or team keypair.
+5. Add tenant-cdmonexternal-net and tenant-cdmoninternal-net into the Selected networks
+6. It's the turn for the script to enter the scene. Edit ETCD_DISCOVERY inside the script *cloud-init-newcluster.sh* with the text returned by https://discovery.etcd.io/new?size=$numnodes
+7. Inside Post-Creation tab select File into drop-down menu to select this script. and check that
+8. Finally in the Advanced Options check the Configuration Drive option.
+Ignition!
 
 ### Growing and shrink the cluster size
 #### Removing node from cluster
@@ -63,11 +62,9 @@ Keep in mind that to add a new member to a cluster is a manual process, it's rec
     4ad401e4b56d403689f3d556c9c7bf37=http://172.31.64.149:2380,e0d9e5adb6eb4c8f94dda86770f38f88=http://172.31.64.151:2380,fc69854b6bd9428f8181c7a76797a313=http://172.31.64.152:2380,c233467ef98d457dbb9ca104914b6a92=http://172.31.64.150:2380
     ```
 
-    Simply copy and paste into initial_cluster variable from cloud-init-fix.sh file.
+    Simply copy and paste into initial_cluster variable from cloud-init-addnode.sh file.
 
-2. Edit cloud-init-fix.sh file and set initial_cluster variable value with the output you got above and then set new_cluster to false.
-
-    Once you get your new node up & running access it through ssh and keep the _NEW_NODE_ID_ from running:
+2.  Once you get your new node up & running access it through ssh and keep the _NEW_NODE_ID_ from running:
     `cat /etc/machine-id`
 
 3. Then run the next commands into any node from the current cluster (not the new one):
