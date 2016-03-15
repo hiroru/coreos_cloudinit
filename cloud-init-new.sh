@@ -8,7 +8,7 @@
 # Defining variables
 new_cluster=true
 # etcd_discovery must be set to create initial new cluster
-etcd_discovery="https://discovery.etcd.io/acf2b4abb3bf59f5f2e6df451daf7c47"
+etcd_discovery="https://discovery.etcd.io/5e04187776a703dcb932b149f5258a22"
 # initial_cluster will be use only to add a new node, then run below command into current cluster member
 initial_cluster=""
 
@@ -49,6 +49,8 @@ if [ -z "$(mount | awk '/oem/ && /rw/ {print}')" ]; then
    sudo mount -o remount,rw /usr/share/oem/
 fi
 
+# Create cloud-config
+## Warning! Never tab the following lines or it will stop working
 if [ $new_cluster = true ]; then
 cat > "/usr/share/oem/cdmon-cloud-config.yml" <<EOF
 #cloud-config
