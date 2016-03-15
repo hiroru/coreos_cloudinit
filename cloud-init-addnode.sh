@@ -5,7 +5,6 @@
 # Official CoreOS docs: https://coreos.com/os/docs/latest/cloud-config.html
 #
 
-
 ############################ Editable vars ################################
 initial_cluster=""
 ###########################################################################
