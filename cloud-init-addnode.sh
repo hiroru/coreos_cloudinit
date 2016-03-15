@@ -5,8 +5,9 @@
 # Official CoreOS docs: https://coreos.com/os/docs/latest/cloud-config.html
 #
 
+
 ############################ Editable vars ################################
-etcd_discovery="https://discovery.etcd.io/5e04187776a703dcb932b149f5258a22"
+initial_cluster=""
 ###########################################################################
 
 
@@ -31,7 +32,6 @@ function get_ipv4() {
 
 
 ################################ Main #####################################
-# Creating environment file
 until ! [[ -z $COREOS_PRIVATE_IPV4 ]]; do
    sudo touch "$envfile"
    if [ $? -ne 0 ]; then
@@ -54,24 +54,27 @@ if [ -z "$(mount | awk '/oem/ && /rw/ {print}')" ]; then
 fi
 
 # Create cloud-config
+initial_cluster="${initial_cluster},${new_node_name}=http://${COREOS_PRIVATE_IPV4}:2380"
 cat > "/usr/share/oem/cdmon-cloud-config.yml" <<EOF
 #cloud-config
 coreos:
   etcd2:
-    discovery: $etcd_discovery
     advertise-client-urls: http://$COREOS_PRIVATE_IPV4:4001,http://$COREOS_PRIVATE_IPV4:2379
     initial-advertise-peer-urls: http://$COREOS_PRIVATE_IPV4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
     listen-peer-urls: http://$COREOS_PRIVATE_IPV4:2380
+    initial-cluster: $initial_cluster
+    initial-cluster-state: existing
+    name: $new_node_name
   fleet:
     public-ip: $COREOS_PUBLIC_IPV4
   update:
     reboot-strategy: "best-effort"
   units:
     - name: etcd2.service
-      command: start
+      command: stop
     - name: fleet.service
-      command: start
+      command: stop
 ssh_authorized_keys:
   - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCh5/Evt1CGZ1gi9AFYC5VrWx5/ppnXRflOiVoKizYCuLs7WPaRSLurOaOsXh/UoqyaEsjTw5UXuQhoLueF2krCIWeIfD1QAPOXgnbAkp1GWfS6sxlvxhHh2mi1mMrVYEt+Jg/MFW8aU8hV2iW3oAEr9UqtSLoSlQTdKjkMaRtCN4JnEp8t2xvL/xUYM+1SepdJhebSsTKLL+ogfP8j3sYvpDMmGkXdHXXFNeQ37oBZMjbEg71aP0NmCXIbzTIaiIhG6WlerlNkcDUDe4GsJFtKMXkJQaGvqIb8pXXVIpc8s7YamVzd/2ZtnctFrr4x00rFSehqvplSeGG2+FVww6mL
 EOF
