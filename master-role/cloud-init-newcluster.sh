@@ -1,12 +1,16 @@
 #!/bin/bash
-# Dirty fix for CoreOS cloud-init on Openstack with multiple interfaces.
+#
+# CoreOS Central Services Role
+# - Deploying a new cluster -
+#
+# Init script for CoreOS cloud-init on Openstack with multiple interfaces.
 # by Sergi Barroso <sergibarroso@cdmon.com>
 #
 # Official CoreOS docs: https://coreos.com/os/docs/latest/cloud-config.html
 #
 
 ############################ Editable vars ################################
-initial_cluster=""
+etcd_discovery=""
 ###########################################################################
 
 
@@ -31,6 +35,7 @@ function get_ipv4() {
 
 
 ################################ Main #####################################
+# Creating environment file
 until ! [[ -z $COREOS_PRIVATE_IPV4 ]]; do
    sudo touch "$envfile"
    if [ $? -ne 0 ]; then
@@ -53,27 +58,24 @@ if [ -z "$(mount | awk '/oem/ && /rw/ {print}')" ]; then
 fi
 
 # Create cloud-config
-initial_cluster="${initial_cluster},${new_node_name}=http://${COREOS_PRIVATE_IPV4}:2380"
 cat > "/usr/share/oem/cdmon-cloud-config.yml" <<EOF
 #cloud-config
 coreos:
   etcd2:
+    discovery: $etcd_discovery
     advertise-client-urls: http://$COREOS_PRIVATE_IPV4:4001,http://$COREOS_PRIVATE_IPV4:2379
     initial-advertise-peer-urls: http://$COREOS_PRIVATE_IPV4:2380
     listen-client-urls: http://0.0.0.0:2379,http://0.0.0.0:4001
     listen-peer-urls: http://$COREOS_PRIVATE_IPV4:2380
-    initial-cluster: $initial_cluster
-    initial-cluster-state: existing
-    name: $new_node_name
   fleet:
-    public-ip: $COREOS_PUBLIC_IPV4
+    metadata: "role=services,platform=openstack,provider=adam"
   update:
     reboot-strategy: "best-effort"
   units:
     - name: etcd2.service
-      command: stop
+      command: start
     - name: fleet.service
-      command: stop
+      command: start
 EOF
 sudo sed -i 's/--oem=ec2-compat/--from-file=\/usr\/share\/oem\/cdmon-cloud-config.yml/g' /usr/share/oem/cloud-config.yml
 
